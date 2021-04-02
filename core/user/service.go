@@ -10,7 +10,7 @@ import (
 // UseCase Define the interface with functions that will be used
 type UseCase interface {
 	GetAll() ([]*User, error)
-	Get(ID int64) (User, error)
+	Get(ID int64) (*User, error)
 	Store(u *User) error
 	Update(u *User) error
 	UpdatePassword(u *User) error

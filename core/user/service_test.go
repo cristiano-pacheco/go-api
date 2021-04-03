@@ -50,7 +50,7 @@ func TestStore(t *testing.T) {
 	data := newData(1)
 	db := getDB(t)
 	defer clearAndClose(db, t)
-	service := user.NewService(db)
+	service := user.NewService(db, &user.Validator{})
 	err := service.Store(data)
 	assert.Nil(t, err)
 }
@@ -58,7 +58,7 @@ func TestStore(t *testing.T) {
 func TestGet(t *testing.T) {
 	db := getDB(t)
 	defer clearAndClose(db, t)
-	service := user.NewService(db)
+	service := user.NewService(db, &user.Validator{})
 	data := newData(1)
 	_ = service.Store(data)
 	saved, err := service.Get(1)
@@ -72,7 +72,7 @@ func TestGet(t *testing.T) {
 func TestGetAll(t *testing.T) {
 	db := getDB(t)
 	defer clearAndClose(db, t)
-	service := user.NewService(db)
+	service := user.NewService(db, &user.Validator{})
 	b1 := newData(1)
 	b2 := newData(2)
 	_ = service.Store(b1)
@@ -85,7 +85,7 @@ func TestGetAll(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	db := getDB(t)
 	defer clearAndClose(db, t)
-	service := user.NewService(db)
+	service := user.NewService(db, &user.Validator{})
 	data := newData(1)
 	_ = service.Store(data)
 	t.Run("TestUpdate caminho feliz", func(t *testing.T) {

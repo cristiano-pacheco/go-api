@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql" // OK
+	"golang.org/x/crypto/bcrypt"
 )
 
 // UseCase Define the interface with functions that will be used
@@ -85,6 +86,13 @@ func (s *Service) Store(u *User) error {
 		return err
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), 12)
+	if err != nil {
+		return err
+	}
+
+	u.Password = string(hashedPassword)
+
 	tx, err := s.DB.Begin()
 	if err != nil {
 		return err
@@ -139,9 +147,17 @@ func (s *Service) Update(u *User) error {
 
 // UpdatePassword an user in the database
 func (s *Service) UpdatePassword(u *User) error {
-	if u.ID == 0 {
-		return fmt.Errorf("invalid ID")
+	err := s.validator.validateUserUpdatePasswordData(u)
+	if err != nil {
+		return err
 	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), 12)
+	if err != nil {
+		return err
+	}
+
+	u.Password = string(hashedPassword)
 
 	tx, err := s.DB.Begin()
 	if err != nil {

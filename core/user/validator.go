@@ -56,7 +56,7 @@ func (uv *Validator) validateUserUpdateData(u *User) error {
 	return nil
 }
 
-func (uv *Validator) validateUserUpdatePasswordData(u User) error {
+func (uv *Validator) validateUserUpdatePasswordData(u *User) error {
 	if u.ID == 0 {
 		return fmt.Errorf("invalid ID")
 	}

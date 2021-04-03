@@ -34,7 +34,7 @@ func main() {
 		negroni.NewLogger(),
 	)
 
-	//handlers
+	// handlers
 	handlers.MakeUserHandlers(r, n, service)
 
 	http.Handle("/", r)

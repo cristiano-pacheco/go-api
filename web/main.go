@@ -27,7 +27,7 @@ func main() {
 	}
 	defer db.Close()
 
-	service := user.NewService(db)
+	service := user.NewService(db, &user.Validator{})
 	r := mux.NewRouter()
 
 	n := negroni.New(

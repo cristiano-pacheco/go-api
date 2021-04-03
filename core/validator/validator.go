@@ -1,7 +1,6 @@
-package validators
+package validator
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -11,9 +10,9 @@ import (
 // NotEmpty Implement a Required method to check that specific fields in the form
 // data are present and not blank. If any fields fail this check, add the
 // appropriate message to the form errors.
-func NotEmpty(value string) error {
+func NotEmpty(field string, value string) error {
 	if strings.TrimSpace(value) == "" {
-		return errors.New("cannot be empty")
+		return fmt.Errorf("%s cannot be empty", field)
 	}
 	return nil
 }
@@ -21,9 +20,9 @@ func NotEmpty(value string) error {
 // MaxLength Implement a MaxLength method to check that a specific field in the form
 // contains a maximum number of characters. If the check fails then add the
 // appropriate message to the form errors.
-func MaxLength(value string, d int) error {
+func MaxLength(field string, value string, d int) error {
 	if utf8.RuneCountInString(value) > d {
-		return fmt.Errorf("is too long (maximum is %d characters)", d)
+		return fmt.Errorf("%s is too long (maximum is %d characters)", field, d)
 	}
 	return nil
 }
@@ -31,15 +30,23 @@ func MaxLength(value string, d int) error {
 // MinLength Implement a MinLength method to check that a specific field in the form
 // contains a minimum number of characters. If the check fails then add the
 // appropriate message to the form errors.
-func MinLength(value string, d int) error {
+func MinLength(field string, value string, d int) error {
 	if utf8.RuneCountInString(value) < d {
-		return fmt.Errorf("is too short (minimum is %d characters)", d)
+		return fmt.Errorf("%s is too short (minimum is %d characters)", field, d)
 	}
 	return nil
 }
 
 // EmailRX regex rule
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+// Email validate email
+func Email(field string, value string) error {
+	if IsEmail(value) == false {
+		return fmt.Errorf("%s is not a valid email", field)
+	}
+	return nil
+}
 
 // IsEmail validate the string email pattern
 func IsEmail(value string) bool {

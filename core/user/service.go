@@ -19,13 +19,15 @@ type UseCase interface {
 
 // Service define the struct for user service
 type Service struct {
-	DB *sql.DB
+	DB        *sql.DB
+	validator *Validator
 }
 
 // NewService constructor
-func NewService(db *sql.DB) *Service {
+func NewService(db *sql.DB, v *Validator) *Service {
 	return &Service{
-		DB: db,
+		DB:        db,
+		validator: v,
 	}
 }
 
@@ -78,6 +80,11 @@ func (s *Service) Get(ID int64) (*User, error) {
 
 // Store a user in the database
 func (s *Service) Store(u *User) error {
+	err := s.validator.validateUserCreationData(u)
+	if err != nil {
+		return err
+	}
+
 	tx, err := s.DB.Begin()
 	if err != nil {
 		return err
@@ -103,8 +110,9 @@ func (s *Service) Store(u *User) error {
 
 // Update an user in the database
 func (s *Service) Update(u *User) error {
-	if u.ID == 0 {
-		return fmt.Errorf("invalid ID")
+	err := s.validator.validateUserUpdateData(u)
+	if err != nil {
+		return err
 	}
 
 	tx, err := s.DB.Begin()

@@ -47,6 +47,7 @@ func main() {
 		ErrorLog:     log.New(os.Stderr, "logger: ", log.Lshortfile),
 	}
 
+	srv.ErrorLog.Printf("Server started at %s", *addr)
 	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)

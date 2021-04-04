@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/cristiano-pacheco/go-api/core/auth"
 	"github.com/cristiano-pacheco/go-api/core/user"
 	"github.com/cristiano-pacheco/go-api/web/handlers"
 
@@ -19,6 +20,7 @@ import (
 func main() {
 	dsn := flag.String("dsn", "root:root@/go_api?parseTime=true", "MySQL data source name")
 	addr := flag.String("addr", ":4000", "HTTP network address")
+	jwtKey := flag.String("jwtkey", "jwt-private-key", "JWT Private Key")
 	flag.Parse()
 
 	db, err := sql.Open("mysql", *dsn)
@@ -27,7 +29,8 @@ func main() {
 	}
 	defer db.Close()
 
-	service := user.NewService(db, &user.Validator{})
+	userService := user.NewService(db, &user.Validator{})
+	authService := auth.NewService(db, &auth.Validator{}, *jwtKey)
 	r := mux.NewRouter()
 
 	n := negroni.New(
@@ -35,7 +38,7 @@ func main() {
 	)
 
 	// handlers
-	handlers.MakeUserHandlers(r, n, service)
+	handlers.MakeUserHandlers(r, n, userService)
 
 	http.Handle("/", r)
 

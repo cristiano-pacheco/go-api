@@ -39,6 +39,7 @@ func main() {
 
 	// handlers
 	handlers.MakeUserHandlers(r, n, userService)
+	handlers.MakeAuthHandlers(r, n, authService)
 
 	http.Handle("/", r)
 

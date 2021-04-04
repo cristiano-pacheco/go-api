@@ -13,7 +13,7 @@ import (
 
 // UseCase auth
 type UseCase interface {
-	IssueToken() (*Token, error)
+	IssueToken(email, password string) (*Token, error)
 }
 
 // Service define the struct service
@@ -45,7 +45,7 @@ func (s *Service) IssueToken(email, password string) (*Token, error) {
 		UserID int64 `json:"user_id"`
 	}
 
-	var hs = jwt.NewHS256([]byte("secret"))
+	var hs = jwt.NewHS256([]byte(s.jwtKey))
 	now := time.Now()
 	pl := CustomPayload{
 		Payload: jwt.Payload{

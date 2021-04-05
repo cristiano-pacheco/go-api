@@ -1,8 +1,9 @@
-package handlers
+package common
 
 import "encoding/json"
 
-func formatJSONError(message string) []byte {
+// FormatJSONError helper
+func FormatJSONError(message string) []byte {
 	appError := struct {
 		Message string `json:"message"`
 	}{

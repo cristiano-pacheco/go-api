@@ -11,6 +11,7 @@ import (
 	"github.com/cristiano-pacheco/go-api/core/auth"
 	"github.com/cristiano-pacheco/go-api/core/user"
 	"github.com/cristiano-pacheco/go-api/web/handlers"
+	"github.com/cristiano-pacheco/go-api/web/middlewares"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -36,6 +37,7 @@ func main() {
 	n := negroni.New(
 		negroni.NewLogger(),
 	)
+	n.Use(middlewares.SetJSONContentType())
 
 	// handlers
 	handlers.MakeUserHandlers(r, n, userService)

@@ -20,15 +20,15 @@ type UseCase interface {
 type Service struct {
 	DB        *sql.DB
 	validator *Validator
-	jwtKey    string
+	jwtHash   *jwt.HMACSHA
 }
 
 // NewService constructor
-func NewService(db *sql.DB, v *Validator, jk string) *Service {
+func NewService(db *sql.DB, v *Validator, jwtHash *jwt.HMACSHA) *Service {
 	return &Service{
 		DB:        db,
 		validator: v,
-		jwtKey:    jk,
+		jwtHash:   jwtHash,
 	}
 }
 
@@ -40,12 +40,6 @@ func (s *Service) IssueToken(email, password string) (*Token, error) {
 	}
 
 	var t Token
-	type CustomPayload struct {
-		jwt.Payload
-		UserID int64 `json:"user_id"`
-	}
-
-	var hs = jwt.NewHS256([]byte(s.jwtKey))
 	now := time.Now()
 	pl := CustomPayload{
 		Payload: jwt.Payload{
@@ -55,7 +49,7 @@ func (s *Service) IssueToken(email, password string) (*Token, error) {
 		UserID: u.ID,
 	}
 
-	token, err := jwt.Sign(pl, hs)
+	token, err := jwt.Sign(pl, s.jwtHash)
 	if err != nil {
 		return nil, err
 	}

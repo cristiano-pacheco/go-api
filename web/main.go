@@ -12,6 +12,7 @@ import (
 	"github.com/cristiano-pacheco/go-api/core/user"
 	"github.com/cristiano-pacheco/go-api/web/handlers"
 	"github.com/cristiano-pacheco/go-api/web/middlewares"
+	"github.com/gbrlsnchs/jwt/v3"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -21,7 +22,7 @@ import (
 func main() {
 	dsn := flag.String("dsn", "root:root@/go_api?parseTime=true", "MySQL data source name")
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	jwtKey := flag.String("jwtkey", "jwt-private-key", "JWT Private Key")
+	jwtkey := flag.String("jwtkey", "jwt-private-key", "JWT Private Key")
 	flag.Parse()
 
 	db, err := sql.Open("mysql", *dsn)
@@ -30,8 +31,11 @@ func main() {
 	}
 	defer db.Close()
 
+	// Hash used to sign the JWT tokens
+	jwtHash := jwt.NewHS256([]byte(*jwtkey))
+
 	userService := user.NewService(db, &user.Validator{})
-	authService := auth.NewService(db, &auth.Validator{}, *jwtKey)
+	authService := auth.NewService(db, &auth.Validator{}, jwtHash)
 	r := mux.NewRouter()
 
 	n := negroni.New(
@@ -40,7 +44,7 @@ func main() {
 	n.Use(middlewares.SetJSONContentType())
 
 	// handlers
-	handlers.MakeUserHandlers(r, n, userService)
+	handlers.MakeUserHandlers(r, n, userService, jwtHash)
 	handlers.MakeAuthHandlers(r, n, authService)
 
 	http.Handle("/", r)

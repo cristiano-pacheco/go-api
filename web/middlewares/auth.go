@@ -1,15 +1,18 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/cristiano-pacheco/go-api/core/auth"
 	"github.com/cristiano-pacheco/go-api/web/common"
+	"github.com/gbrlsnchs/jwt/v3"
 	"github.com/urfave/negroni"
 )
 
 // CheckAuthentication middlware
-func CheckAuthentication() negroni.Handler {
+func CheckAuthentication(jwtHash *jwt.HMACSHA) negroni.Handler {
 	return negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		token := extractTokenFromHeaders(r)
 		if token == "" {
@@ -17,6 +20,16 @@ func CheckAuthentication() negroni.Handler {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+		var pl auth.CustomPayload
+		hd, err := jwt.Verify([]byte(token), jwtHash, &pl)
+		if err != nil {
+			w.Write(common.FormatJSONError("Invalid Credentials"))
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		fmt.Println(hd)
+
 		next(w, r)
 	})
 }

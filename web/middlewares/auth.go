@@ -44,7 +44,7 @@ func extractTokenFromHeaders(r *http.Request) string {
 	parts := strings.Split(a, "Bearer")
 
 	if len(parts) == 2 {
-		return parts[1]
+		return strings.TrimSpace(parts[1])
 	}
 
 	return ""

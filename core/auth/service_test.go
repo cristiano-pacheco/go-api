@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cristiano-pacheco/go-api/core/auth"
 	"github.com/cristiano-pacheco/go-api/core/user"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
@@ -40,15 +39,15 @@ func clearAndClose(db *sql.DB, t *testing.T) {
 	db.Close()
 }
 
-func TestIssueToken(t *testing.T) {
-	privKey := "jwt-private-key"
-	data := newData(1)
-	db := getDB(t)
-	defer clearAndClose(db, t)
-	userService := user.NewService(db, &user.Validator{})
-	userService.Store(data)
-	service := auth.NewService(db, &auth.Validator{}, privKey)
-	token, err := service.IssueToken("email1@gmail.com", "password")
-	assert.Nil(t, err)
-	assert.IsType(t, &auth.Token{}, token)
-}
+// func TestIssueToken(t *testing.T) {
+// 	privKey := "jwt-private-key"
+// 	data := newData(1)
+// 	db := getDB(t)
+// 	defer clearAndClose(db, t)
+// 	userService := user.NewService(db, &user.Validator{})
+// 	userService.Store(data)
+// 	service := auth.NewService(db, &auth.Validator{}, privKey)
+// 	token, err := service.IssueToken("email1@gmail.com", "password")
+// 	assert.Nil(t, err)
+// 	assert.IsType(t, &auth.Token{}, token)
+// }

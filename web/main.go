@@ -31,7 +31,7 @@ func main() {
 	}
 	defer db.Close()
 
-	// Hash used to sign the JWT tokens
+	// Hash used to sign and verify the JWT tokens
 	jwtHash := jwt.NewHS256([]byte(*jwtkey))
 
 	userService := user.NewService(db, &user.Validator{})

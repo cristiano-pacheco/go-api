@@ -19,16 +19,9 @@ func main() {
 	now := time.Now()
 	pl := CustomPayload{
 		Payload: jwt.Payload{
-			Issuer:         "gbrlsnchs",
-			Subject:        "someone",
-			Audience:       jwt.Audience{"https://golang.org", "https://jwt.io"},
-			ExpirationTime: jwt.NumericDate(now.Add(24 * 30 * 12 * time.Hour)),
-			NotBefore:      jwt.NumericDate(now.Add(30 * time.Minute)),
+			ExpirationTime: jwt.NumericDate(now.Add(2 * time.Second)),
 			IssuedAt:       jwt.NumericDate(now),
-			JWTID:          "foobar",
 		},
-		Foo: "foo",
-		Bar: 1337,
 	}
 
 	token, err := jwt.Sign(pl, hs)
@@ -36,18 +29,21 @@ func main() {
 		fmt.Printf("deu erro")
 	}
 
-	tokenString := string(token)
-	token2 := []byte(tokenString)
+	time.Sleep(3 * time.Second)
+
+	now = time.Now()
+	iatValidator := jwt.IssuedAtValidator(now)
+	expValidator := jwt.ExpirationTimeValidator(now)
 
 	var pl2 = &CustomPayload{}
 
-	hd, err := jwt.Verify(token2, hs, &pl2)
+	validatePayload := jwt.ValidatePayload(&pl2.Payload, iatValidator, expValidator)
+
+	hd, err := jwt.Verify(token, hs, &pl2, validatePayload)
 	if err != nil {
 		fmt.Printf("deu erro validação")
 		return
 	}
 
 	fmt.Println(hd)
-
-	// ...
 }

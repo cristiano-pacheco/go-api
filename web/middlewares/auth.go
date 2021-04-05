@@ -1,9 +1,9 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/cristiano-pacheco/go-api/core/auth"
 	"github.com/cristiano-pacheco/go-api/web/common"
@@ -20,15 +20,20 @@ func CheckAuthentication(jwtHash *jwt.HMACSHA) negroni.Handler {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+
 		var pl auth.CustomPayload
-		hd, err := jwt.Verify([]byte(token), jwtHash, &pl)
+
+		now := time.Now()
+		iatValidator := jwt.IssuedAtValidator(now)
+		expValidator := jwt.ExpirationTimeValidator(now)
+		validatePayload := jwt.ValidatePayload(&pl.Payload, iatValidator, expValidator)
+
+		_, err := jwt.Verify([]byte(token), jwtHash, &pl, validatePayload)
 		if err != nil {
 			w.Write(common.FormatJSONError("Invalid Credentials"))
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-
-		fmt.Println(hd)
 
 		next(w, r)
 	})

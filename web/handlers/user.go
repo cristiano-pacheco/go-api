@@ -14,29 +14,29 @@ import (
 )
 
 // MakeUserHandlers create all user resource handlers
-func MakeUserHandlers(r *mux.Router, n *negroni.Negroni, service user.UseCase, jk *jwt.HMACSHA) {
+func MakeUserHandlers(r *mux.Router, n *negroni.Negroni, service user.UseCase, jwtKey *jwt.HMACSHA) {
 	r.Handle("/v1/users", n.With(
-		middlewares.CheckAuthentication(jk),
+		middlewares.CheckAuthentication(jwtKey),
 		negroni.Wrap(getAllUsers(service)),
 	)).Methods("GET", "OPTIONS")
 
 	r.Handle("/v1/users/{id}", n.With(
-		middlewares.CheckAuthentication(jk),
+		middlewares.CheckAuthentication(jwtKey),
 		negroni.Wrap(getUser(service)),
 	)).Methods("GET", "OPTIONS")
 
 	r.Handle("/v1/users", n.With(
-		middlewares.CheckAuthentication(jk),
+		middlewares.CheckAuthentication(jwtKey),
 		negroni.Wrap(storeUser(service)),
 	)).Methods("POST", "OPTIONS")
 
 	r.Handle("/v1/users/{id}", n.With(
-		middlewares.CheckAuthentication(jk),
+		middlewares.CheckAuthentication(jwtKey),
 		negroni.Wrap(updateUser(service)),
 	)).Methods("PUT", "OPTIONS")
 
 	r.Handle("/v1/users/{id}", n.With(
-		middlewares.CheckAuthentication(jk),
+		middlewares.CheckAuthentication(jwtKey),
 		negroni.Wrap(removeUser(service)),
 	)).Methods("DELETE", "OPTIONS")
 }

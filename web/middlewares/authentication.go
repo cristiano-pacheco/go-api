@@ -16,8 +16,8 @@ func CheckAuthentication(jwtHash *jwt.HMACSHA) negroni.Handler {
 	return negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		token := extractTokenFromHeaders(r)
 		if token == "" {
-			w.Write(common.FormatJSONError("Invalid Credentials"))
 			w.WriteHeader(http.StatusUnauthorized)
+			w.Write(common.FormatJSONError("Invalid Credentials"))
 			return
 		}
 
@@ -30,8 +30,8 @@ func CheckAuthentication(jwtHash *jwt.HMACSHA) negroni.Handler {
 
 		_, err := jwt.Verify([]byte(token), jwtHash, &pl, validatePayload)
 		if err != nil {
-			w.Write(common.FormatJSONError("Invalid Credentials"))
 			w.WriteHeader(http.StatusUnauthorized)
+			w.Write(common.FormatJSONError("Invalid Credentials"))
 			return
 		}
 

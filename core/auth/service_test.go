@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cristiano-pacheco/go-api/core/auth"
 	"github.com/cristiano-pacheco/go-api/core/user"
+	"github.com/gbrlsnchs/jwt/v3"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 )
@@ -51,3 +53,11 @@ func clearAndClose(db *sql.DB, t *testing.T) {
 // 	assert.Nil(t, err)
 // 	assert.IsType(t, &auth.Token{}, token)
 // }
+
+func TestHasAccess(t *testing.T) {
+	db := getDB(t)
+	service := auth.NewService(db, &auth.Validator{}, &jwt.HMACSHA{})
+	r, err := service.HasAccess(1, auth.GetUser)
+	assert.True(t, r)
+	assert.Nil(t, err)
+}

@@ -14,6 +14,7 @@ import (
 // UseCase auth
 type UseCase interface {
 	IssueToken(email, password string) (*Token, error)
+	HasAccess(userID int64, action string) (bool, error)
 }
 
 // Service define the struct service
@@ -30,6 +31,27 @@ func NewService(db *sql.DB, v *Validator, jwtHash *jwt.HMACSHA) *Service {
 		validator: v,
 		jwtHash:   jwtHash,
 	}
+}
+
+// HasAccess action
+func (s *Service) HasAccess(userID int64, action string) (bool, error) {
+	stmt, err := s.DB.Prepare(
+		"select count(1) from user_permission up join permission p on up.permission_id = p.id and p.action = ? where up.user_id = ?",
+	)
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	var hasAccess = 0
+	err = stmt.QueryRow(action, userID).Scan(&hasAccess)
+	if err != nil {
+		return false, err
+	}
+	if hasAccess == 1 {
+		return true, nil
+	}
+	return false, nil
 }
 
 // IssueToken a new token
@@ -69,13 +91,16 @@ func (s *Service) checkUserCredentials(email, password string) (*user.User, erro
 
 	stmt, err := s.DB.Prepare("select id, name, email, password, is_active, is_admin from user where email = ? and is_active = 1")
 	if err != nil {
+		return nil, err
+	}
+
+	err = stmt.QueryRow(email).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.IsActive, &u.IsAdmin)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("Invalid Credentials")
 		}
 		return nil, err
 	}
-
-	err = stmt.QueryRow(email).Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.IsActive, &u.IsAdmin)
 
 	defer stmt.Close()
 

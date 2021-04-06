@@ -1,11 +1,11 @@
-package auth_test
+package authentication_test
 
 import (
 	"database/sql"
 	"fmt"
 	"testing"
 
-	"github.com/cristiano-pacheco/go-api/core/auth"
+	"github.com/cristiano-pacheco/go-api/core/authentication"
 	"github.com/cristiano-pacheco/go-api/core/user"
 	"github.com/gbrlsnchs/jwt/v3"
 	_ "github.com/go-sql-driver/mysql"
@@ -48,16 +48,16 @@ func clearAndClose(db *sql.DB, t *testing.T) {
 // 	defer clearAndClose(db, t)
 // 	userService := user.NewService(db, &user.Validator{})
 // 	userService.Store(data)
-// 	service := auth.NewService(db, &auth.Validator{}, privKey)
+// 	service := authentication.NewService(db, &authentication.Validator{}, privKey)
 // 	token, err := service.IssueToken("email1@gmail.com", "password")
 // 	assert.Nil(t, err)
-// 	assert.IsType(t, &auth.Token{}, token)
+// 	assert.IsType(t, &authentication.Token{}, token)
 // }
 
 func TestHasAccess(t *testing.T) {
 	db := getDB(t)
-	service := auth.NewService(db, &auth.Validator{}, &jwt.HMACSHA{})
-	r, err := service.HasAccess(1, auth.GetUser)
+	service := authentication.NewService(db, &authentication.Validator{}, &jwt.HMACSHA{})
+	r, err := service.HasAccess(1, authentication.GetUser)
 	assert.True(t, r)
 	assert.Nil(t, err)
 }

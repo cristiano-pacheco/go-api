@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/cristiano-pacheco/go-api/core/auth"
+	"github.com/cristiano-pacheco/go-api/core/authentication"
 	"github.com/cristiano-pacheco/go-api/core/user"
 	"github.com/cristiano-pacheco/go-api/web/handlers"
 	"github.com/cristiano-pacheco/go-api/web/middlewares"
@@ -35,7 +35,7 @@ func main() {
 	jwtHash := jwt.NewHS256([]byte(*jwtkey))
 
 	userService := user.NewService(db, &user.Validator{})
-	authService := auth.NewService(db, &auth.Validator{}, jwtHash)
+	authService := authentication.NewService(db, &authentication.Validator{}, jwtHash)
 	r := mux.NewRouter()
 
 	n := negroni.New(

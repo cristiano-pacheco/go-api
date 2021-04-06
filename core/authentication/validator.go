@@ -1,4 +1,4 @@
-package auth
+package authentication
 
 import (
 	"github.com/cristiano-pacheco/go-api/core/validator"

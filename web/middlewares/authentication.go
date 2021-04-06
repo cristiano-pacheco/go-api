@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cristiano-pacheco/go-api/core/auth"
+	"github.com/cristiano-pacheco/go-api/core/authentication"
 	"github.com/cristiano-pacheco/go-api/web/common"
 	"github.com/gbrlsnchs/jwt/v3"
 	"github.com/urfave/negroni"
@@ -21,7 +21,7 @@ func CheckAuthentication(jwtHash *jwt.HMACSHA) negroni.Handler {
 			return
 		}
 
-		var pl auth.CustomPayload
+		var pl authentication.CustomPayload
 
 		now := time.Now()
 		iatValidator := jwt.IssuedAtValidator(now)

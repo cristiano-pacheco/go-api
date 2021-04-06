@@ -10,8 +10,8 @@ import (
 
 	"github.com/cristiano-pacheco/go-api/core/authentication"
 	"github.com/cristiano-pacheco/go-api/core/user"
-	"github.com/cristiano-pacheco/go-api/web/handlers"
-	"github.com/cristiano-pacheco/go-api/web/middlewares"
+	"github.com/cristiano-pacheco/go-api/web/handler"
+	"github.com/cristiano-pacheco/go-api/web/middleware"
 	"github.com/gbrlsnchs/jwt/v3"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -41,11 +41,11 @@ func main() {
 	n := negroni.New(
 		negroni.NewLogger(),
 	)
-	n.Use(middlewares.SetJSONContentType())
+	n.Use(middleware.SetJSONContentType())
 
 	// handlers
-	handlers.MakeUserHandlers(r, n, userService, jwtHash)
-	handlers.MakeAuthHandlers(r, n, authService)
+	handler.MakeUserHandlers(r, n, userService, jwtHash)
+	handler.MakeAuthHandlers(r, n, authService)
 
 	http.Handle("/", r)
 

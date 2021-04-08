@@ -3,7 +3,6 @@ package middleware
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -16,12 +15,12 @@ import (
 )
 
 // CheckAuthentication middlware
-func CheckAuthentication(jwtHash *jwt.HMACSHA) negroni.Handler {
+func CheckAuthentication(s *authentication.Service) negroni.Handler {
 	return negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		token := extractTokenFromHeaders(r)
 		if token == "" {
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write(common.FormatJSONError("Invalid Credentials"))
+			w.Write(common.FormatJSONError("Not Authorized"))
 			return
 		}
 
@@ -32,10 +31,10 @@ func CheckAuthentication(jwtHash *jwt.HMACSHA) negroni.Handler {
 		expValidator := jwt.ExpirationTimeValidator(now)
 		validatePayload := jwt.ValidatePayload(&pl.Payload, iatValidator, expValidator)
 
-		_, err := jwt.Verify([]byte(token), jwtHash, &pl, validatePayload)
+		_, err := jwt.Verify([]byte(token), s.JWTHash, &pl, validatePayload)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write(common.FormatJSONError("Invalid Credentials"))
+			w.Write(common.FormatJSONError("Not Authorized"))
 			return
 		}
 		userId, err := getUserIdFromToken(token)
@@ -46,8 +45,18 @@ func CheckAuthentication(jwtHash *jwt.HMACSHA) negroni.Handler {
 		}
 		routeName := mux.CurrentRoute(r).GetName()
 
-		fmt.Println(userId)
-		fmt.Println(routeName)
+		hasAccess, err := s.HasAccess(userId, routeName)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(common.FormatJSONError(err.Error()))
+			return
+		}
+
+		if !hasAccess {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write(common.FormatJSONError("Not Authorized"))
+			return
+		}
 
 		next(w, r)
 	})

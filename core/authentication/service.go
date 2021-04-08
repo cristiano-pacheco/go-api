@@ -13,7 +13,7 @@ import (
 
 // UseCase auth
 type UseCase interface {
-	HasAccess(userID int64, action string) (bool, error)
+	HasAccess(userID int, action string) (bool, error)
 	IssueToken(email, password string) (*Token, error)
 }
 
@@ -21,7 +21,7 @@ type UseCase interface {
 type Service struct {
 	DB        *sql.DB
 	validator *Validator
-	jwtHash   *jwt.HMACSHA
+	JWTHash   *jwt.HMACSHA
 }
 
 // NewService constructor
@@ -29,12 +29,12 @@ func NewService(db *sql.DB, v *Validator, jwtHash *jwt.HMACSHA) *Service {
 	return &Service{
 		DB:        db,
 		validator: v,
-		jwtHash:   jwtHash,
+		JWTHash:   jwtHash,
 	}
 }
 
 // HasAccess action
-func (s *Service) HasAccess(userID int64, action string) (bool, error) {
+func (s *Service) HasAccess(userID int, action string) (bool, error) {
 	stmt, err := s.DB.Prepare(
 		"select count(1) from user_permission up join permission p on up.permission_id = p.id and p.action = ? where up.user_id = ?",
 	)
@@ -71,7 +71,7 @@ func (s *Service) IssueToken(email, password string) (*Token, error) {
 		UserID: u.ID,
 	}
 
-	token, err := jwt.Sign(pl, s.jwtHash)
+	token, err := jwt.Sign(pl, s.JWTHash)
 	if err != nil {
 		return nil, err
 	}

@@ -44,7 +44,7 @@ func main() {
 	n.Use(middleware.SetJSONContentType())
 
 	// handlers
-	handler.MakeUserHandlers(r, n, userService, jwtHash)
+	handler.MakeUserHandlers(r, n, userService, authService)
 	handler.MakeAuthHandlers(r, n, authService)
 
 	http.Handle("/", r)

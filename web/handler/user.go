@@ -6,39 +6,39 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/cristiano-pacheco/go-api/core/authentication"
 	"github.com/cristiano-pacheco/go-api/core/authorization"
 	"github.com/cristiano-pacheco/go-api/core/user"
 	"github.com/cristiano-pacheco/go-api/web/common"
 	"github.com/cristiano-pacheco/go-api/web/middleware"
-	"github.com/gbrlsnchs/jwt/v3"
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
 )
 
 // MakeUserHandlers create all user resource handlers
-func MakeUserHandlers(r *mux.Router, n *negroni.Negroni, service user.UseCase, jwtKey *jwt.HMACSHA) {
+func MakeUserHandlers(r *mux.Router, n *negroni.Negroni, service user.UseCase, authService *authentication.Service) {
 	r.Handle("/v1/users", n.With(
-		middleware.CheckAuthentication(jwtKey),
+		middleware.CheckAuthentication(authService),
 		negroni.Wrap(getAllUsers(service)),
 	)).Methods("GET", "OPTIONS").Name(authorization.GetAllUsers)
 
 	r.Handle("/v1/users/{id}", n.With(
-		middleware.CheckAuthentication(jwtKey),
+		middleware.CheckAuthentication(authService),
 		negroni.Wrap(getUser(service)),
 	)).Methods("GET", "OPTIONS").Name(authorization.GetUser)
 
 	r.Handle("/v1/users", n.With(
-		middleware.CheckAuthentication(jwtKey),
+		middleware.CheckAuthentication(authService),
 		negroni.Wrap(storeUser(service)),
 	)).Methods("POST", "OPTIONS").Name(authorization.StoreUser)
 
 	r.Handle("/v1/users/{id}", n.With(
-		middleware.CheckAuthentication(jwtKey),
+		middleware.CheckAuthentication(authService),
 		negroni.Wrap(updateUser(service)),
 	)).Methods("PUT", "OPTIONS").Name(authorization.UpdateUser)
 
 	r.Handle("/v1/users/{id}", n.With(
-		middleware.CheckAuthentication(jwtKey),
+		middleware.CheckAuthentication(authService),
 		negroni.Wrap(removeUser(service)),
 	)).Methods("DELETE", "OPTIONS").Name(authorization.RemoveUser)
 }

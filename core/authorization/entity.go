@@ -19,3 +19,7 @@ type Permission struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+type contextKey int
+
+const UserIdContextKey contextKey = iota

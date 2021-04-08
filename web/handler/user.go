@@ -2,9 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/cristiano-pacheco/go-api/core/authorization"
 	"github.com/cristiano-pacheco/go-api/core/user"
 	"github.com/cristiano-pacheco/go-api/web/common"
 	"github.com/cristiano-pacheco/go-api/web/middleware"
@@ -18,27 +20,27 @@ func MakeUserHandlers(r *mux.Router, n *negroni.Negroni, service user.UseCase, j
 	r.Handle("/v1/users", n.With(
 		middleware.CheckAuthentication(jwtKey),
 		negroni.Wrap(getAllUsers(service)),
-	)).Methods("GET", "OPTIONS")
+	)).Methods("GET", "OPTIONS").Name(authorization.GetAllUsers)
 
 	r.Handle("/v1/users/{id}", n.With(
 		middleware.CheckAuthentication(jwtKey),
 		negroni.Wrap(getUser(service)),
-	)).Methods("GET", "OPTIONS")
+	)).Methods("GET", "OPTIONS").Name(authorization.GetUser)
 
 	r.Handle("/v1/users", n.With(
 		middleware.CheckAuthentication(jwtKey),
 		negroni.Wrap(storeUser(service)),
-	)).Methods("POST", "OPTIONS")
+	)).Methods("POST", "OPTIONS").Name(authorization.StoreUser)
 
 	r.Handle("/v1/users/{id}", n.With(
 		middleware.CheckAuthentication(jwtKey),
 		negroni.Wrap(updateUser(service)),
-	)).Methods("PUT", "OPTIONS")
+	)).Methods("PUT", "OPTIONS").Name(authorization.UpdateUser)
 
 	r.Handle("/v1/users/{id}", n.With(
 		middleware.CheckAuthentication(jwtKey),
 		negroni.Wrap(removeUser(service)),
-	)).Methods("DELETE", "OPTIONS")
+	)).Methods("DELETE", "OPTIONS").Name(authorization.RemoveUser)
 }
 
 func getAllUsers(service user.UseCase) http.Handler {
@@ -62,6 +64,8 @@ func getAllUsers(service user.UseCase) http.Handler {
 func getUser(service user.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
+
+		fmt.Println(r.Context().Value("user_id"))
 
 		id, err := strconv.ParseInt(vars["id"], 10, 64)
 		if err != nil {
@@ -96,7 +100,7 @@ func storeUser(service user.UseCase) http.Handler {
 			w.Write(common.FormatJSONError(err.Error()))
 			return
 		}
-		//@TODO precisamos validar os dados antes de salvar na base de dados. Pergunta: Como fazer isso?
+
 		err = service.Store(&u)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)

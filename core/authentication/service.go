@@ -13,6 +13,7 @@ import (
 
 // UseCase auth
 type UseCase interface {
+	HasAccess(userID int64, action string) (bool, error)
 	IssueToken(email, password string) (*Token, error)
 }
 
@@ -30,6 +31,27 @@ func NewService(db *sql.DB, v *Validator, jwtHash *jwt.HMACSHA) *Service {
 		validator: v,
 		jwtHash:   jwtHash,
 	}
+}
+
+// HasAccess action
+func (s *Service) HasAccess(userID int64, action string) (bool, error) {
+	stmt, err := s.DB.Prepare(
+		"select count(1) from user_permission up join permission p on up.permission_id = p.id and p.action = ? where up.user_id = ?",
+	)
+	if err != nil {
+		return false, err
+	}
+	defer stmt.Close()
+
+	var hasAccess = 0
+	err = stmt.QueryRow(action, userID).Scan(&hasAccess)
+	if err != nil {
+		return false, err
+	}
+	if hasAccess == 1 {
+		return true, nil
+	}
+	return false, nil
 }
 
 // IssueToken a new token

@@ -1,6 +1,9 @@
 package middleware
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -8,6 +11,7 @@ import (
 	"github.com/cristiano-pacheco/go-api/core/authentication"
 	"github.com/cristiano-pacheco/go-api/web/common"
 	"github.com/gbrlsnchs/jwt/v3"
+	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
 )
 
@@ -34,6 +38,16 @@ func CheckAuthentication(jwtHash *jwt.HMACSHA) negroni.Handler {
 			w.Write(common.FormatJSONError("Invalid Credentials"))
 			return
 		}
+		userId, err := getUserIdFromToken(token)
+		if err != nil || userId == 0 {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(common.FormatJSONError("Unable to parse the token data"))
+			return
+		}
+		routeName := mux.CurrentRoute(r).GetName()
+
+		fmt.Println(userId)
+		fmt.Println(routeName)
 
 		next(w, r)
 	})
@@ -53,4 +67,24 @@ func extractTokenFromHeaders(r *http.Request) string {
 	}
 
 	return ""
+}
+
+func getUserIdFromToken(token string) (int, error) {
+	parts := strings.Split(token, ".")
+	part := parts[1]
+	payload, err := base64.RawURLEncoding.DecodeString(part)
+	if err != nil {
+		return 0, err
+	}
+	data, err := json_decode(payload)
+	if err != nil {
+		return 0, err
+	}
+	return int(data["user_id"].(float64)), nil
+}
+
+func json_decode(data []byte) (map[string]interface{}, error) {
+	var dat map[string]interface{}
+	err := json.Unmarshal(data, &dat)
+	return dat, err
 }

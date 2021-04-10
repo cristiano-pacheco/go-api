@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/cristiano-pacheco/go-api/core/authentication"
+	"github.com/cristiano-pacheco/go-api/core/auth"
 	"github.com/cristiano-pacheco/go-api/web/common"
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
@@ -16,14 +16,14 @@ type authRequest struct {
 }
 
 // MakeAuthHandlers create all user resource handlers
-func MakeAuthHandlers(r *mux.Router, n *negroni.Negroni, service authentication.UseCase) {
+func MakeAuthHandlers(r *mux.Router, n *negroni.Negroni, service auth.UseCase) {
 	r.Handle("/v1/auth", n.With(
 		negroni.Wrap(IssueToken(service)),
 	)).Methods("POST", "OPTIONS")
 }
 
 // IssueToken handler
-func IssueToken(service authentication.UseCase) http.Handler {
+func IssueToken(service auth.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var ar authRequest
 

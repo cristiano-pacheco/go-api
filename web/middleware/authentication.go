@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cristiano-pacheco/go-api/core/authentication"
+	"github.com/cristiano-pacheco/go-api/core/auth"
 	"github.com/cristiano-pacheco/go-api/web/common"
 	"github.com/gbrlsnchs/jwt/v3"
 	"github.com/gorilla/mux"
@@ -15,8 +15,10 @@ import (
 )
 
 // CheckAuthentication middlware
-func CheckAuthentication(s *authentication.Service) negroni.Handler {
+func CheckAuthentication(s *auth.Service) negroni.Handler {
 	return negroni.HandlerFunc(func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		// refatorar
+		// elimitar pacote authorization ou melhorar código
 		token := extractTokenFromHeaders(r)
 		if token == "" {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -24,7 +26,7 @@ func CheckAuthentication(s *authentication.Service) negroni.Handler {
 			return
 		}
 
-		var pl authentication.CustomPayload
+		var pl auth.CustomPayload
 
 		now := time.Now()
 		iatValidator := jwt.IssuedAtValidator(now)
@@ -37,12 +39,14 @@ func CheckAuthentication(s *authentication.Service) negroni.Handler {
 			w.Write(common.FormatJSONError("Not Authorized"))
 			return
 		}
+
 		userId, err := getUserIdFromToken(token)
 		if err != nil || userId == 0 {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write(common.FormatJSONError("Unable to parse the token data"))
 			return
 		}
+
 		routeName := mux.CurrentRoute(r).GetName()
 
 		hasAccess, err := s.HasAccess(userId, routeName)

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/cristiano-pacheco/go-api/core/auth"
+	"github.com/cristiano-pacheco/go-api/core/list"
 	"github.com/cristiano-pacheco/go-api/core/user"
 	"github.com/cristiano-pacheco/go-api/web/handler"
 	"github.com/cristiano-pacheco/go-api/web/middleware"
@@ -34,8 +35,10 @@ func main() {
 	// Hash used to sign and verify the JWT tokens
 	jwtHash := jwt.NewHS256([]byte(*jwtkey))
 
-	userService := user.NewService(db, &user.Validator{})
 	authService := auth.NewService(db, &auth.Validator{}, jwtHash)
+	userService := user.NewService(db, &user.Validator{})
+	listService := list.NewService(db, &list.Validator{})
+
 	r := mux.NewRouter()
 
 	n := negroni.New(
@@ -44,8 +47,9 @@ func main() {
 	n.Use(middleware.SetJSONContentType())
 
 	// handlers
-	handler.MakeUserHandlers(r, n, userService, authService)
 	handler.MakeAuthHandlers(r, n, authService)
+	handler.MakeUserHandlers(r, n, userService, authService)
+	handler.MakeListHandlers(r, n, listService, authService)
 
 	http.Handle("/", r)
 

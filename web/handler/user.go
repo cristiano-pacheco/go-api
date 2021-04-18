@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -63,8 +62,6 @@ func getAllUsers(service user.UseCase) http.Handler {
 func getUser(service user.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-
-		fmt.Println(r.Context().Value("user_id"))
 
 		id, err := strconv.ParseInt(vars["id"], 10, 64)
 		if err != nil {

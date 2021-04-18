@@ -30,3 +30,37 @@ func (uv *Validator) validateUpdateData(l *List) error {
 
 	return nil
 }
+
+func (uv *Validator) validateListItemCreationData(li *ListItem) error {
+	if li.ListID == 0 {
+		return fmt.Errorf("invalid List ID")
+	}
+
+	if li.CategoryID == 0 {
+		return fmt.Errorf("invalid Category ID")
+	}
+
+	err := validator.NotEmpty("name", li.Name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (uv *Validator) validateListItemUpdateData(li *ListItem) error {
+	if li.ID == 0 {
+		return fmt.Errorf("invalid List ID")
+	}
+
+	if li.CategoryID == 0 {
+		return fmt.Errorf("invalid Category ID")
+	}
+
+	err := validator.NotEmpty("name", li.Name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

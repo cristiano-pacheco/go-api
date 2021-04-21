@@ -14,6 +14,7 @@ import (
 	"github.com/cristiano-pacheco/go-api/web/handler"
 	"github.com/cristiano-pacheco/go-api/web/middleware"
 	"github.com/gbrlsnchs/jwt/v3"
+	"github.com/rs/cors"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -35,16 +36,24 @@ func main() {
 	// Hash used to sign and verify the JWT tokens
 	jwtHash := jwt.NewHS256([]byte(*jwtkey))
 
+	// Services creation
 	authService := auth.NewService(db, &auth.Validator{}, jwtHash)
 	userService := user.NewService(db, &user.Validator{})
 	listService := list.NewService(db, &list.Validator{})
 
+	// Router, Middlewares and Handlers
 	r := mux.NewRouter()
 
 	n := negroni.New(
 		negroni.NewLogger(),
 	)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+	})
+
 	n.Use(middleware.SetJSONContentType())
+	n.Use(c)
 
 	// handlers
 	handler.MakeAuthHandlers(r, n, authService)

@@ -32,3 +32,16 @@ type CustomPayload struct {
 	jwt.Payload
 	UserID int64 `json:"user_id"`
 }
+
+// UserPermission
+type UserPermission struct {
+	ID          int64         `json:"id"`
+	Name        string        `json:"name"`
+	Permissions []*Permission `json:"permissions"`
+}
+
+// Permission
+type Permission struct {
+	Name string `json:"name"`
+	Code string `json:"code"`
+}

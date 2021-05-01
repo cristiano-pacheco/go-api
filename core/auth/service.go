@@ -15,6 +15,7 @@ import (
 type UseCase interface {
 	HasAccess(userID int, action string) (bool, error)
 	IssueToken(email, password string) (*Token, error)
+	GetUserPermissionsById(ID int64) (*UserPermission, error)
 }
 
 // Service define the struct service
@@ -31,6 +32,59 @@ func NewService(db *sql.DB, v *Validator, jwtHash *jwt.HMACSHA) *Service {
 		validator: v,
 		JWTHash:   jwtHash,
 	}
+}
+
+// GetUserPermissionsById
+func (s *Service) GetUserPermissionsById(ID int64) (*UserPermission, error) {
+	stmt, err := s.DB.Prepare("select name from user where id = ?")
+	if err != nil {
+		return nil, err
+	}
+
+	defer stmt.Close()
+	au := &UserPermission{}
+	au.ID = ID
+
+	err = stmt.QueryRow(ID).Scan(&au.Name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var permissions []*Permission
+
+	sql := `
+		select p.name, p.action from user_permission up
+		join permission p ON up.permission_id = p.id
+		where user_id = ?
+	`
+
+	stmtPermissions, err := s.DB.Prepare(sql)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer stmtPermissions.Close()
+
+	rows, err := stmtPermissions.Query(ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var p Permission
+		err = rows.Scan(&p.Name, &p.Code)
+		if err != nil {
+			return nil, err
+		}
+		permissions = append(permissions, &p)
+	}
+
+	au.Permissions = permissions
+
+	return au, nil
 }
 
 // HasAccess action

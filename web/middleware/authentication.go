@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -49,20 +50,24 @@ func CheckAuthentication(s *auth.Service) negroni.Handler {
 
 		routeName := mux.CurrentRoute(r).GetName()
 
-		hasAccess, err := s.HasAccess(userId, routeName)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(common.FormatJSONError(err.Error()))
-			return
+		if routeName != auth.UserME {
+			hasAccess, err := s.HasAccess(userId, routeName)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(common.FormatJSONError(err.Error()))
+				return
+			}
+
+			if !hasAccess {
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write(common.FormatJSONError("Not Authorized"))
+				return
+			}
 		}
 
-		if !hasAccess {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write(common.FormatJSONError("Not Authorized"))
-			return
-		}
+		ctx := context.WithValue(r.Context(), "UserID", userId)
 
-		next(w, r)
+		next(w, r.WithContext(ctx))
 	})
 }
 

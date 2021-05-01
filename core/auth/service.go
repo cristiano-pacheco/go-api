@@ -35,7 +35,7 @@ func NewService(db *sql.DB, v *Validator, jwtHash *jwt.HMACSHA) *Service {
 }
 
 // GetUserPermissionsById
-func (s *Service) GetUserPermissionsById(ID int64) (*UserPermission, error) {
+func (s *Service) GetUserPermissionsById(ID int) (*UserPermission, error) {
 	stmt, err := s.DB.Prepare("select name from user where id = ?")
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func (s *Service) GetUserPermissionsById(ID int64) (*UserPermission, error) {
 
 	defer stmt.Close()
 	au := &UserPermission{}
-	au.ID = ID
+	au.ID = int64(ID)
 
 	err = stmt.QueryRow(ID).Scan(&au.Name)
 
@@ -119,7 +119,7 @@ func (s *Service) IssueToken(email, password string) (*Token, error) {
 	now := time.Now()
 	pl := CustomPayload{
 		Payload: jwt.Payload{
-			ExpirationTime: jwt.NumericDate(now.Add(time.Minute * 5)),
+			ExpirationTime: jwt.NumericDate(now.Add(time.Minute * 86400)),
 			IssuedAt:       jwt.NumericDate(now),
 		},
 		UserID: u.ID,

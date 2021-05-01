@@ -20,6 +20,7 @@ const (
 	StoreLisItemAction    string = "store_list_item"
 	UpdateListItemAction  string = "update_list_item"
 	RemoveListItemAction  string = "remove_list_item"
+	UserME                string = "user_me"
 )
 
 // Token struct

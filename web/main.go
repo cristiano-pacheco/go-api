@@ -50,10 +50,22 @@ func main() {
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{
+			http.MethodHead,
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+		},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: false,
+		// Enable Debugging for testing, consider disabling in production
+		Debug: true,
 	})
 
-	n.Use(middleware.SetJSONContentType())
 	n.Use(c)
+	n.Use(middleware.SetJSONContentType())
 
 	// handlers
 	handler.MakeAuthHandlers(r, n, authService)
